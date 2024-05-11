@@ -1,0 +1,47 @@
+use std::sync::Arc;
+
+use amqprs::connection::OpenConnectionArguments;
+use serde::{Deserialize, Serialize};
+
+mod server;
+use server::start_rpc_server;
+
+mod client;
+use client::RPCClient;
+
+mod util;
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TestMsg {
+    number : i32,
+    msg    : String,
+}
+
+#[tokio::main(flavor = "multi_thread", worker_threads = 2)]
+async fn main() {
+    let connection_args  = OpenConnectionArguments::new("localhost", 5672, "guest", "guest");
+    let connection_args2 = connection_args.clone();
+    let test = Arc::new([1, 2]);
+
+    let handle = tokio::spawn(async move {
+        let x = Box::new(move |x: TestMsg| {
+            let _y = test.clone();
+            x
+        });
+        start_rpc_server(connection_args2, "test", x,true).await.unwrap()
+    });
+
+    let mut client = RPCClient::new(&connection_args).await.unwrap();
+    let out: TestMsg = client
+        .call(
+            "test",
+            TestMsg {
+                number: 5,
+                msg: "jews did wtc".to_string(),
+            },
+        )
+        .await
+        .unwrap();
+    println!("{:?}", out);
+    handle.await.unwrap();
+}
