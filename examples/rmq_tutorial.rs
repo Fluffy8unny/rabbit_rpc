@@ -9,7 +9,7 @@ use rabbit_rpc::RPCClient;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct TestMsg {
-    number : i32,
+    number : u32,
 }
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 2)]
@@ -21,7 +21,8 @@ async fn main() {
     let handle = tokio::spawn(async move {
         let rpc_fn = Box::new(move |msg: TestMsg| {
 
-            fn fibbonacchi( n : i32)->i32 { match n {
+            fn fibbonacchi( n : u32)->u32 { match n {
+                0     => panic!("0 is not valid input for fibbonacchi"),
                 1 | 2 => 1,
                 _     => fibbonacchi(n-1) + fibbonacchi(n-2),
             } }
@@ -32,7 +33,7 @@ async fn main() {
     });
 
     let mut client = RPCClient::new(&client_args).await.unwrap();
-    let out: i32 = client
+    let out: u32 = client
         .call(
             "test",
             TestMsg {
