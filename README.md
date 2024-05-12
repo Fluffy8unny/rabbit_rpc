@@ -42,7 +42,13 @@ start_rpc_server( server_args, //connection arguments e.g. ip and port of the Ra
                 ).await.unwrap()
 }
 ```
-
+### Dependencies
+- amqprs
+- async-trait
+- tokio
+- serde
+- serde_json
+- 
 ### Client
 First instantiate a client, then use it to perform the rpc call
 ```rust
@@ -59,4 +65,5 @@ let out: u32 = client
 ```
 
 ### Todos
-Adding error handling would be nice e.g. catching errors in the server, serializing it in any way shape or form and telling the client that somethign went wrong.
+- Adding error handling would be nice e.g. catching errors in the server, serializing it in any way shape or form and telling the client that somethign went wrong.
+- Add different async backends
